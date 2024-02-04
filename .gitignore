@@ -1,3 +1,2 @@
-
-# Ignore python virtual environment
-backend/venv/*
+# Ignore python virtual environemnt stuff
+pyvenv/*

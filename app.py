@@ -1,5 +1,4 @@
 from flask import Flask, render_template
-from waitress import serve 
 
 app = Flask(__name__)
 
@@ -9,6 +8,4 @@ def index():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0')
-    serve(app, host='0.0.0.0', port=8080, url_scheme='https')
-
+    app.run(host='127.0.0.1', port=5000)

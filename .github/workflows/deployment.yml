@@ -1,0 +1,20 @@
+name: deployment
+
+on:
+  push:
+    branches:
+      - gh-pages
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install SSH Pass
+        run: apt-get install sshpass
+
+      - name: Restart waitress service
+        run: echo ${{ secrets.SUDO_PASSWD }} | sshpass -p ${{ secrets.SSH_KEY }} ssh -tt -p 2228 nemo@nemo.icmc.usp.br "sudo systemctl restart nemo-site.service"
+
+      - name: Restart nginx service
+        run: echo ${{ secrets.SUDO_PASSWD }} | sshpass -p ${{ secrets.SSH_KEY }} ssh -tt -p 2228 nemo@nemo.icmc.usp.br "sudo systemctl restart nginx"

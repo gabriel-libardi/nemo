@@ -8,16 +8,19 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ssh_key: ${{ secrets.SSH_KEY }}
+      sudo_passwd: ${{ secrets.SUDO_PASSWD }}
 
     steps:
       - name: Install SSH Pass
         run: sudo apt install sshpass
 
       - name: Pull changes from repository
-        run: sshpass -p ${{ secrets.SSH_KEY }} ssh -tt -p 2228 nemo@nemo.icmc.usp.br 'cd /var/www/nemo/; git switch gh-pages; git pull'
+        run: sshpass -p $ssh_key ssh -tt -p 2228 nemo@nemo.icmc.usp.br 'cd /var/www/nemo/; git switch gh-pages; git pull'
 
       - name: Restart waitress service
-        run: echo ${{ secrets.SUDO_PASSWD }} | sshpass -p ${{ secrets.SSH_KEY }} ssh -tt -p 2228 nemo@nemo.icmc.usp.br 'sudo systemctl restart nemo-site.service'
+        run: echo $sudo_passwd | sshpass -p $ssh_key ssh -tt -p 2228 nemo@nemo.icmc.usp.br 'sudo systemctl restart nemo-site.service'
 
       - name: Restart nginx service
-        run: echo ${{ secrets.SUDO_PASSWD }} | sshpass -p ${{ secrets.SSH_KEY }} ssh -tt -p 2228 nemo@nemo.icmc.usp.br 'sudo systemctl restart nginx.service'
+        run: echo $sudo_passwd | sshpass -p $ssh_key ssh -tt -p 2228 nemo@nemo.icmc.usp.br 'sudo systemctl restart nginx.service'

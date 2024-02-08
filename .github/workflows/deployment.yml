@@ -9,18 +9,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      ssh_key: ${{ secrets.SSH_KEY }}
-      sudo_passwd: ${{ secrets.SUDO_PASSWD }}
+      SUDO_PASSWD: ${{ secrets.SUDO_PASSWD }}
 
     steps:
-      - name: Install SSH Pass
-        run: sudo apt install sshpass
-
-      - name: Pull changes from repository
-        run: sshpass -p $ssh_key ssh -tt -p 2228 nemo@nemo.icmc.usp.br 'cd /var/www/nemo/; git switch gh-pages; git pull'
-
-      - name: Restart waitress service
-        run: echo $sudo_passwd | sshpass -p $ssh_key ssh -tt -p 2228 nemo@nemo.icmc.usp.br 'sudo systemctl restart nemo-site.service'
-
-      - name: Restart nginx service
-        run: echo $sudo_passwd | sshpass -p $ssh_key ssh -tt -p 2228 nemo@nemo.icmc.usp.br 'sudo systemctl restart nginx.service'
+      - name: Excecute deployment script over ssh
+        uses: appleboy/ssh-action@master
+        with:
+          host: nemo.icmc.usp.br
+          username: ${{ secrets.NEMO_USERNAME }}
+          password: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd /var/www/nemo/
+            git switch gh-pages
+            git pull
+            echo $SUDO_PASSWD | sudo -S systemctl restart nemo-site.service
+            echo $SUDO_PASSWD | sudo -S systemctl restart nginx.service

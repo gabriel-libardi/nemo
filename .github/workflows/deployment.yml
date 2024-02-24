@@ -1,0 +1,28 @@
+name: deployment
+
+on:
+  push:
+    branches:
+      - gh-pages
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      SUDO_PASSWD: ${{ secrets.SUDO_PASSWD }}
+
+    steps:
+      - name: Excecute deployment script over ssh
+        uses: appleboy/ssh-action@master
+        with:
+          host: nemo.icmc.usp.br
+          username: ${{ secrets.NEMO_USERNAME }}
+          password: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          envs: SUDO_PASSWD
+          script: |
+            cd /var/www/nemo/
+            git switch gh-pages
+            git pull
+            echo $SUDO_PASSWD | sudo -S systemctl restart nemo-site.service
+            echo $SUDO_PASSWD | sudo -S systemctl restart nginx.service

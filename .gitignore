@@ -2,3 +2,4 @@
 pyvenv/*
 env/*
 __pycache__/*
+.venv/*

@@ -3,3 +3,6 @@ pyvenv/*
 env/*
 __pycache__/*
 .venv/*
+
+# Ignore database instance
+*.db

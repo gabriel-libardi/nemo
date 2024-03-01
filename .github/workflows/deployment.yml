@@ -24,5 +24,7 @@ jobs:
             cd /var/www/nemo/
             git switch gh-pages
             git pull
+            source /var/www/nemo/env/bin/activate
+            pip  install -r requirements.txt
             echo $SUDO_PASSWD | sudo -S systemctl restart nemo-site.service
             echo $SUDO_PASSWD | sudo -S systemctl restart nginx.service

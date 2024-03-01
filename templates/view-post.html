@@ -1,0 +1,74 @@
+{% extends './partials/base_layout.html' %}
+
+{% block styles %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/separador.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/post-summary.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/generic-pages.css') }}">
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/post-showcase.css') }}">
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/showdown/dist/showdown.min.js"></script>
+
+<script>
+    document.getElementById('delete-button').addEventListener('click', function (event) {
+        var confirmationInput = document.getElementById('confirmation');
+        if (confirmationInput.value.toLowerCase() !== 'deleta') {
+            alert('Por favor, digite "deleta" para confirmar a exclusão.');
+            event.preventDefault(); // Impede o envio do formulário
+        }
+    });
+</script>
+
+<script>
+    var pcontent = document.getElementById('theonlythingthatworks').value;
+    console.log(pcontent);
+    var converter = new showdown.Converter();
+    var htmlContent = converter.makeHtml(pcontent);
+    console.log(htmlContent);
+    document.getElementById('post-actual-content').innerHTML = htmlContent;
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="div-separadora">
+    <h1></h1>
+    <script>
+        var thish1 = document.getElementsByTagName('h1')[0];
+        thish1.textContent = "";
+        var title = "{{ptitle}}";
+
+        for (let i = 0; i < title.length; i++) {
+            if (title[i] >= 'A' && title[i] <= 'Z' && false) {
+                thish1.textContent += `$\\mathbb{${title[i]}}$`
+            } else {
+                thish1.textContent += title[i];
+            }
+        }
+    </script>
+</div>
+
+<div class="post-content-container">
+    <p class="description">{{ pdesc }}</p>
+    <img src="{{ url_for('static', filename='imgs/fotonemo.jpg') if pimg_path == None else url_for('static', filename=pimg_path[6:]) }}"
+        alt="">
+    <div id="post-actual-content"></div>
+    <textarea style="display:none;" id="theonlythingthatworks">{{ pcontent }}</textarea>
+    <p class="post-publish-date"><i>Publicado em {{ pdate.day }}/{{ pdate.month }}/{{ pdate.year }} às {{ pdate.hour
+            }}:{{pdate.minute}}</i></p>
+</div>
+
+{% if logado %}
+<form action="{{ url_for('edit_post_get', post_id=pid) }}" id="edit-form" method="get">
+    <button id="edit-button" type="submit">Editar</button>
+</form>
+
+<form id="delete-form" action="{{ url_for('delete_post', post_id=pid) }}" method="post">
+    <input type="text" id="confirmation" name="confirmation" placeholder="Digite 'deleta'">
+    <button id="delete-button" type="submit">Deletar</button>
+</form>
+{% endif %}
+
+
+{% endblock %}

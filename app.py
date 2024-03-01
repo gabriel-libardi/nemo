@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from datetime import datetime
+from datetime import datetime 
 from flask_migrate import Migrate
+from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
@@ -10,16 +11,33 @@ import os
 app = Flask(__name__)
 login_manager = LoginManager()
 login_manager.init_app(app)
+bcrypt = Bcrypt(app)
+
+from flask import Flask, render_template, request, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.exc import IntegrityError
 
 
-class User(UserMixin):
-    def __init__(self, id):
-        self.id = id
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        user = User.query.filter_by(email=email).first()
 
+        if user and user.check_password(password):
+            user.authenticate()
+            db.session.add(user)
+            db.session.commit()
+            login_user(user, remember=True)
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User(user_id)
+            # Redirect to a dashboard or profile page
+            return redirect(url_for('create_post_get'))
+        else:
+            error = 'Invalid credentials. Please try again.'
+            return render_template('login.html', error=error)
+
+    return render_template('login.html')
 
 
 app.jinja_env.globals['title'] = 'NEMO'
@@ -43,31 +61,65 @@ class Post(db.Model):
     def __repr__(self):
         return f'<Post {self.title}>'
 
-# Rota de login
+
+class User(db.Model):
+    """An admin user capable of viewing reports.
+
+    :param str email: email address of user
+    :param str password: encrypted password for the user
+
+    """
+    __tablename__ = 'user'
+
+    email = db.Column(db.String(128), primary_key=True)
+    password_hash = db.Column(db.String(128))
+    is_authenticated = db.Column(db.Boolean, default=False)
+
+    def __init__(self, email:str, password:str):
+        self.email = email
+        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+        self.is_authenticated = False
+
+    def is_active(self):
+        """True, as all users are active."""
+        return True
+
+    def get_id(self):
+        """Return the email address to satisfy Flask-Login's requirements."""
+        return self.email
+
+    def check_password(self, password):
+        return bcrypt.check_password_hash(self.password_hash, password)
+
+    def authenticate(self):
+        self.is_authenticated = True
+
+    def logout(self):
+        self.is_authenticated = False
 
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        # Verifique se o usuário e a senha estão corretos (simulação simples)
-        if username == 'admin' and password == 'password':
-            user = User(1)  # Crie um objeto de usuário
-            login_user(user)  # Faça login no usuário
-            # Redirecione para a página protegida
-            return redirect(url_for('index'))
-    return render_template('login.html')
+@login_manager.user_loader
+def user_loader(user_id):
+    """Given *user_id*, return the associated User object.
+
+    :param unicode user_id: user_id (email) user to retrieve
+
+    """
+    return User.query.get(user_id)
 
 
 # Rota de logout
 @app.route('/logout')
 @login_required
 def logout():
-    logout_user()  # Faça logout do usuário
-    return redirect(url_for('index'))  # Redirecione para a página de login
+    """Logout the current user."""
+    user = current_user
+    user.logout()
+    db.session.add(user)
+    db.session.commit()
+    logout_user()
+
+    return render_template("logout.html")
 
 
 @app.route('/')

@@ -1,11 +1,9 @@
 name: deployment
 
 on:
-  pull_request:
+  push:
     branches:
       - gh-pages
-    types:
-      - closed
 
 jobs:
   build:
@@ -19,7 +17,7 @@ jobs:
         with:
           host: nemo.icmc.usp.br
           username: ${{ secrets.NEMO_USERNAME }}
-          password: ${{ secrets.SSH_KEY }}
+          key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           envs: SUDO_PASSWD
           script: |

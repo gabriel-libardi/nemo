@@ -17,7 +17,7 @@ jobs:
         with:
           host: nemo.icmc.usp.br
           username: ${{ secrets.NEMO_USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
+          password: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           envs: SUDO_PASSWD
           script: |

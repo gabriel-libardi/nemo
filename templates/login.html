@@ -1,8 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Login</title>
-</head>
+{% extends './partials/base_layout.html' %} 
+
+{% block content %}
+<title>Login</title>
+
 <body>
     <h2>Login</h2>
     {% if error %}
@@ -16,5 +16,4 @@
         <input type="submit" value="Login">
     </form>
 </body>
-</html>
-
+{% endblock %}
